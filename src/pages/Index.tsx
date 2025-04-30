@@ -3,7 +3,6 @@ import { useState } from "react";
 import CanvasCreator from "@/components/CanvasCreator";
 import ThemeSelector from "@/components/ThemeSelector";
 import LayoutSelector from "@/components/LayoutSelector";
-import TextEditor from "@/components/TextEditor";
 import AnimationToggle from "@/components/AnimationToggle";
 import ExportOptions from "@/components/ExportOptions";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,8 @@ const Index = () => {
   const [shapes, setShapes] = useState(["circle", "square", "wave"]);
   
   const handleCyclePalette = () => {
-    setPaletteIndex((prevIndex) => (prevIndex + 1) % 3);
+    // Updated to cycle through 5 palettes instead of 3
+    setPaletteIndex((prevIndex) => (prevIndex + 1) % 5);
   };
 
   const handleLayoutChange = (newLayout: { type: string; sections: number }) => {
@@ -59,10 +59,9 @@ const Index = () => {
           <div className="col-span-1 md:col-span-4 lg:col-span-3 space-y-6">
             <div className="bg-card rounded-lg shadow p-4 space-y-4">
               <Tabs defaultValue="theme">
-                <TabsList className="grid grid-cols-3 w-full">
+                <TabsList className="grid grid-cols-2 w-full">
                   <TabsTrigger value="theme">Theme</TabsTrigger>
-                  <TabsTrigger value="layout">Layout</TabsTrigger>
-                  <TabsTrigger value="text">Text</TabsTrigger>
+                  <TabsTrigger value="layout">Layout & Text</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="theme" className="space-y-4 pt-4">
@@ -81,11 +80,6 @@ const Index = () => {
                     onShapesChange={setShapes}
                     sectionTexts={sectionTexts}
                     onSectionTextsChange={setSectionTexts}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="text" className="space-y-4 pt-4">
-                  <TextEditor
                     primaryText={primaryText}
                     secondaryText={secondaryText}
                     onPrimaryTextChange={setPrimaryText}

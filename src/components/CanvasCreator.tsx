@@ -168,9 +168,9 @@ const CanvasCreator = ({
         ctx.strokeRect(section.x, section.y, section.width, section.height);
         
         // Draw section text if available
-        if (sectionTexts[section.index]) {
+        if (sectionTexts && sectionTexts[section.index]) {
           ctx.save();
-          ctx.font = `bold ${section.width / 10}px sans-serif`;
+          ctx.font = `bold ${Math.max(section.width / 10, 12)}px sans-serif`;
           ctx.textAlign = "center";
           ctx.fillStyle = themeColors.text;
           ctx.fillText(
@@ -193,10 +193,11 @@ const CanvasCreator = ({
       for (let i = 0; i < numElements; i++) {
         const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
         
+        // Base properties for all elements
         const element = {
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          size: 10 + Math.random() * 50,
+          size: Math.max(10 + Math.random() * 50, 15), // Ensure minimum size of 15
           type: shapeType,
           color: themeColors.shapes[Math.floor(Math.random() * themeColors.shapes.length)],
           speed: isAnimated ? (0.2 + Math.random() * 0.5) * animationSpeed : 0,
@@ -206,7 +207,10 @@ const CanvasCreator = ({
           frequency: 0.5 + Math.random() * 2,
           points: Math.floor(5 + Math.random() * 8),
           rotation: 0,
-          rotationSpeed: Math.random() * 0.01 * animationSpeed
+          rotationSpeed: Math.random() * 0.01 * animationSpeed,
+          // Add special properties for lines and curves
+          length: canvas.width * (0.3 + Math.random() * 0.5), // For lines
+          controlPointOffset: Math.random() * 100 + 50 // For curves
         };
         
         elements.push(element);
@@ -219,6 +223,7 @@ const CanvasCreator = ({
         ctx.save();
         ctx.globalAlpha = element.opacity;
         ctx.fillStyle = element.color;
+        ctx.strokeStyle = element.color;
         
         if (isAnimated) {
           element.x += Math.cos(element.angle) * element.speed;
@@ -243,39 +248,42 @@ const CanvasCreator = ({
         switch (element.type) {
           case "circle":
             ctx.beginPath();
-            ctx.arc(0, 0, element.size, 0, Math.PI * 2);
+            // Ensure radius is positive
+            const radius = Math.max(1, element.size);
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
             ctx.fill();
             break;
             
           case "square":
+            const size = Math.max(2, element.size);
             ctx.fillRect(
-              -element.size / 2,
-              -element.size / 2,
-              element.size,
-              element.size
+              -size / 2,
+              -size / 2,
+              size,
+              size
             );
             break;
             
           case "line":
+            // Draw line spanning most of the canvas
             ctx.beginPath();
-            ctx.moveTo(-element.size, 0);
-            ctx.lineTo(element.size, 0);
+            ctx.moveTo(-element.length / 2, 0);
+            ctx.lineTo(element.length / 2, 0);
             ctx.lineWidth = 1 + element.size / 10;
-            ctx.strokeStyle = element.color;
             ctx.stroke();
             break;
             
           case "curve":
+            // Draw curve with control points that create a nice arc
             ctx.beginPath();
-            ctx.moveTo(-element.size, 0);
+            ctx.moveTo(-element.length / 2, 0);
             ctx.quadraticCurveTo(
               0, 
-              -element.size * 1.5, 
-              element.size, 
+              -element.controlPointOffset, 
+              element.length / 2, 
               0
             );
-            ctx.strokeStyle = element.color;
-            ctx.lineWidth = 1 + element.size / 10;
+            ctx.lineWidth = Math.max(1, element.size / 10);
             ctx.stroke();
             break;
             
@@ -284,7 +292,7 @@ const CanvasCreator = ({
             for (let i = 0; i < Math.PI * 2; i += 0.1) {
               const x = Math.cos(i) * element.size;
               const y = Math.sin(i) * element.size + 
-                        Math.sin(i * 8 + time / 500) * 
+                        Math.sin(i * 8 + time / (500 / animationSpeed)) * 
                         element.amplitude * (isAnimated ? 1 : 0.5);
               
               if (i === 0) {
@@ -300,9 +308,10 @@ const CanvasCreator = ({
           case "blob":
             ctx.beginPath();
             for (let i = 0; i < Math.PI * 2; i += (Math.PI * 2) / element.points) {
-              const radius = element.size * 
+              // Ensure radius is always positive by using Math.max
+              const radius = Math.max(1, element.size * 
                             (0.8 + Math.sin(i * element.frequency + 
-                                           (isAnimated ? time / 1000 : 0)) * 0.2);
+                                           (isAnimated ? time / (1000 / animationSpeed) : 0)) * 0.2));
               const x = Math.cos(i) * radius;
               const y = Math.sin(i) * radius;
               

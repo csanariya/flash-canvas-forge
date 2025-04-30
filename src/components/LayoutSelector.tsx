@@ -24,6 +24,10 @@ interface LayoutSelectorProps {
   onShapesChange: (shapes: string[]) => void;
   sectionTexts: string[];
   onSectionTextsChange: (texts: string[]) => void;
+  primaryText?: string;
+  secondaryText?: string;
+  onPrimaryTextChange?: (text: string) => void;
+  onSecondaryTextChange?: (text: string) => void;
 }
 
 const layoutTypes = [
@@ -63,7 +67,11 @@ const LayoutSelector = ({
   onLayoutChange, 
   onShapesChange,
   sectionTexts = [], // Provide default empty array
-  onSectionTextsChange 
+  onSectionTextsChange,
+  primaryText = "85%",
+  secondaryText = "Engagement increase",
+  onPrimaryTextChange,
+  onSecondaryTextChange
 }: LayoutSelectorProps) => {
   const [selectedShapes, setSelectedShapes] = useState<string[]>(["circle", "square", "wave"]);
   
@@ -153,6 +161,32 @@ const LayoutSelector = ({
         </span>
       </div>
 
+      <div className="space-y-3 border-t pt-3">
+        <h3 className="text-lg font-medium">Main Display Text</h3>
+        <div className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="primary-text">Primary Text</Label>
+            <Input
+              id="primary-text"
+              value={primaryText}
+              onChange={(e) => onPrimaryTextChange && onPrimaryTextChange(e.target.value)}
+              placeholder="Enter primary text"
+              className="text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="secondary-text">Secondary Text</Label>
+            <Input
+              id="secondary-text"
+              value={secondaryText}
+              onChange={(e) => onSecondaryTextChange && onSecondaryTextChange(e.target.value)}
+              placeholder="Enter secondary text"
+              className="text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-3">
         <h3 className="text-lg font-medium">Section Text</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -170,7 +204,7 @@ const LayoutSelector = ({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 border-t pt-3">
         <h3 className="text-lg font-medium">Shape Elements</h3>
         <div className="space-y-2">
           {shapeOptions.map((shape) => (

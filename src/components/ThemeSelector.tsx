@@ -83,7 +83,7 @@ const ThemeSelector = ({
                 }`} 
               />
               <span className="absolute bottom-0 right-0 bg-background/80 text-xs px-1 rounded">
-                {paletteIndex + 1}/3
+                {paletteIndex + 1}/5
               </span>
             </div>
           </div>

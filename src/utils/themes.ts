@@ -44,6 +44,34 @@ export const getDarkTheme = (paletteIndex = 0) => {
         "#4ade80",
         "#eab308"
       ]
+    },
+    {
+      gradientStart: "#1a1a2e",
+      gradientEnd: "#16213e",
+      accent: "rgba(113, 128, 150, 0.5)",
+      text: "#ffffff",
+      subtext: "rgba(255, 255, 255, 0.8)",
+      shapes: [
+        "#0f3460",
+        "#e94560",
+        "#5352ed",
+        "#ff9f43",
+        "#00d2d3"
+      ]
+    },
+    {
+      gradientStart: "#222831",
+      gradientEnd: "#393e46",
+      accent: "rgba(0, 173, 181, 0.5)",
+      text: "#ffffff",
+      subtext: "rgba(255, 255, 255, 0.8)",
+      shapes: [
+        "#00adb5",
+        "#ff5722",
+        "#ffd369",
+        "#a3f7bf",
+        "#ff5959"
+      ]
     }
   ];
   
@@ -93,6 +121,34 @@ export const getLightTheme = (paletteIndex = 0) => {
         "#d1fae5",
         "#fef9c3"
       ]
+    },
+    {
+      gradientStart: "#fefefe",
+      gradientEnd: "#f9fafb",
+      accent: "rgba(79, 70, 229, 0.2)",
+      text: "#111827",
+      subtext: "rgba(17, 24, 39, 0.7)",
+      shapes: [
+        "#fbcfe8",
+        "#a5f3fc",
+        "#d8b4fe",
+        "#86efac",
+        "#fde68a"
+      ]
+    },
+    {
+      gradientStart: "#f8f9fa",
+      gradientEnd: "#e9ecef",
+      accent: "rgba(99, 179, 237, 0.3)",
+      text: "#212529",
+      subtext: "rgba(33, 37, 41, 0.7)",
+      shapes: [
+        "#ced4da",
+        "#adb5bd",
+        "#dee2e6",
+        "#e9ecef",
+        "#f8f9fa"
+      ]
     }
   ];
   
@@ -141,6 +197,34 @@ export const getMulticolorTheme = (paletteIndex = 0) => {
         "#facc15",
         "#6366f1",
         "#22d3ee"
+      ]
+    },
+    {
+      gradientStart: "#6d28d9",
+      gradientEnd: "#be185d",
+      accent: "rgba(255, 255, 255, 0.5)",
+      text: "#ffffff",
+      subtext: "rgba(255, 255, 255, 0.8)",
+      shapes: [
+        "#fbbf24",
+        "#34d399",
+        "#60a5fa",
+        "#a78bfa",
+        "#fb7185"
+      ]
+    },
+    {
+      gradientStart: "#059669",
+      gradientEnd: "#8b5cf6",
+      accent: "rgba(255, 255, 255, 0.5)",
+      text: "#ffffff",
+      subtext: "rgba(255, 255, 255, 0.8)",
+      shapes: [
+        "#fcd34d",
+        "#f472b6",
+        "#38bdf8",
+        "#4ade80",
+        "#fb923c"
       ]
     }
   ];
