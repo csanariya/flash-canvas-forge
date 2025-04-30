@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,9 +9,9 @@ import {
   LayoutGrid, 
   LayoutList, 
   Square, 
-  Circle, 
-  Line, 
-  Curve 
+  Circle,
+  CircleDashed,
+  SquareDashed
 } from "lucide-react";
 
 interface LayoutSelectorProps {
@@ -52,10 +51,10 @@ const layoutTypes = [
 const shapeOptions = [
   { id: "circle", name: "Circles", icon: <Circle className="h-4 w-4" /> },
   { id: "square", name: "Squares", icon: <Square className="h-4 w-4" /> },
-  { id: "line", name: "Lines", icon: <Line className="h-4 w-4" /> },
-  { id: "curve", name: "Curves", icon: <Curve className="h-4 w-4" /> },
+  { id: "line", name: "Lines", icon: <Square className="h-4 w-4 rotate-45" /> },
+  { id: "curve", name: "Curves", icon: <CircleDashed className="h-4 w-4" /> },
   { id: "wave", name: "Waves", icon: <Square className="h-4 w-4 rotate-45" /> },
-  { id: "blob", name: "Blobs", icon: <Circle className="h-4 w-4 stroke-dashed" /> }
+  { id: "blob", name: "Blobs", icon: <SquareDashed className="h-4 w-4" /> }
 ];
 
 const LayoutSelector = ({ 
