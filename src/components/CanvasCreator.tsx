@@ -85,17 +85,21 @@ const CanvasCreator = ({
       const { type, sections } = layout;
       const sectionDims = [];
       
+      // Reserve space for the title - use 15% of canvas height for title area
+      const titleAreaHeight = canvas.height * 0.15;
+      const availableHeight = canvas.height - titleAreaHeight;
+      
       if (type === "grid") {
         const gridSize = Math.ceil(Math.sqrt(sections));
         const cellWidth = canvas.width / gridSize;
-        const cellHeight = canvas.height / gridSize;
+        const cellHeight = availableHeight / gridSize;
         
         for (let i = 0; i < gridSize; i++) {
           for (let j = 0; j < gridSize; j++) {
             if (i * gridSize + j < sections) {
               sectionDims.push({
                 x: j * cellWidth,
-                y: i * cellHeight,
+                y: titleAreaHeight + (i * cellHeight), // Start after title area
                 width: cellWidth,
                 height: cellHeight,
                 index: i * gridSize + j
@@ -104,12 +108,12 @@ const CanvasCreator = ({
           }
         }
       } else if (type === "horizontal") {
-        const sectionHeight = canvas.height / sections;
+        const sectionHeight = availableHeight / sections;
         
         for (let i = 0; i < sections; i++) {
           sectionDims.push({
             x: 0,
-            y: i * sectionHeight,
+            y: titleAreaHeight + (i * sectionHeight), // Start after title area
             width: canvas.width,
             height: sectionHeight,
             index: i
@@ -118,7 +122,7 @@ const CanvasCreator = ({
       } else if (type === "columns-2") {
         const columnWidth = canvas.width / 2;
         const rowsPerColumn = Math.ceil(sections / 2);
-        const rowHeight = canvas.height / rowsPerColumn;
+        const rowHeight = availableHeight / rowsPerColumn;
         
         for (let i = 0; i < 2; i++) {
           for (let j = 0; j < rowsPerColumn; j++) {
@@ -126,7 +130,7 @@ const CanvasCreator = ({
             if (index < sections) {
               sectionDims.push({
                 x: i * columnWidth,
-                y: j * rowHeight,
+                y: titleAreaHeight + (j * rowHeight), // Start after title area
                 width: columnWidth,
                 height: rowHeight,
                 index
@@ -137,7 +141,7 @@ const CanvasCreator = ({
       } else if (type === "columns-3") {
         const columnWidth = canvas.width / 3;
         const rowsPerColumn = Math.ceil(sections / 3);
-        const rowHeight = canvas.height / rowsPerColumn;
+        const rowHeight = availableHeight / rowsPerColumn;
         
         for (let i = 0; i < 3; i++) {
           for (let j = 0; j < rowsPerColumn; j++) {
@@ -145,7 +149,7 @@ const CanvasCreator = ({
             if (index < sections) {
               sectionDims.push({
                 x: i * columnWidth,
-                y: j * rowHeight,
+                y: titleAreaHeight + (j * rowHeight), // Start after title area
                 width: columnWidth,
                 height: rowHeight,
                 index
@@ -163,10 +167,10 @@ const CanvasCreator = ({
       const sectionDims = getSectionDimensions();
       
       sectionDims.forEach(section => {
-        // Draw section borders
-        ctx.strokeStyle = themeColors.accent;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(section.x, section.y, section.width, section.height);
+        // Remove gridlines by not drawing section borders
+        // ctx.strokeStyle = themeColors.accent;
+        // ctx.lineWidth = 1;
+        // ctx.strokeRect(section.x, section.y, section.width, section.height);
         
         // Draw section text if available
         if (sectionTexts && sectionTexts[section.index]) {
@@ -363,12 +367,12 @@ const CanvasCreator = ({
       ctx.font = `bold ${canvas.width / 15}px sans-serif`;
       ctx.textAlign = "center";
       ctx.fillStyle = themeColors.text;
-      ctx.fillText(primaryText, canvas.width / 2, canvas.height / 8);
+      ctx.fillText(primaryText, canvas.width / 2, canvas.height * 0.08);
       
       // Draw subtitle text below the main title
       ctx.font = `${canvas.width / 30}px sans-serif`;
       ctx.fillStyle = themeColors.subtext;
-      ctx.fillText(secondaryText, canvas.width / 2, canvas.height / 8 + 35);
+      ctx.fillText(secondaryText, canvas.width / 2, canvas.height * 0.08 + 35);
     };
     
     // Animation function with time-based animation
