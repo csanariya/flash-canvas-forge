@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -61,7 +62,7 @@ const LayoutSelector = ({
   currentLayout, 
   onLayoutChange, 
   onShapesChange,
-  sectionTexts,
+  sectionTexts = [], // Provide default empty array
   onSectionTextsChange 
 }: LayoutSelectorProps) => {
   const [selectedShapes, setSelectedShapes] = useState<string[]>(["circle", "square", "wave"]);
@@ -87,15 +88,15 @@ const LayoutSelector = ({
   };
 
   const updateSectionText = (index: number, text: string) => {
-    const newTexts = [...sectionTexts];
+    const newTexts = [...(sectionTexts || [])]; // Ensure sectionTexts is an array
     newTexts[index] = text;
     onSectionTextsChange(newTexts);
   };
 
   // Ensure we have enough text entries for all sections
   useEffect(() => {
-    if (sectionTexts.length !== currentLayout.sections) {
-      const newTexts = [...sectionTexts];
+    if (!sectionTexts || sectionTexts.length !== currentLayout.sections) {
+      const newTexts = [...(sectionTexts || [])]; // Ensure sectionTexts is an array
       
       // Add entries if needed
       while (newTexts.length < currentLayout.sections) {
@@ -155,7 +156,7 @@ const LayoutSelector = ({
       <div className="space-y-3">
         <h3 className="text-lg font-medium">Section Text</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-          {sectionTexts.map((text, index) => (
+          {(sectionTexts || []).map((text, index) => (
             <div key={`section-${index}`} className="flex items-center space-x-2">
               <span className="text-sm font-medium min-w-8">{index + 1}:</span>
               <Input
