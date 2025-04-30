@@ -14,6 +14,8 @@ import {
   CircleDashed,
   SquareDashed
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 
 interface LayoutSelectorProps {
   currentLayout: {
@@ -74,6 +76,21 @@ const LayoutSelector = ({
   onSecondaryTextChange
 }: LayoutSelectorProps) => {
   const [selectedShapes, setSelectedShapes] = useState<string[]>(["circle", "square", "wave"]);
+  const [sectionInputs, setSectionInputs] = useState<{primary: string, secondary: string}[]>([]);
+  
+  // Initialize section inputs based on sectionTexts
+  useEffect(() => {
+    if (sectionTexts && sectionTexts.length > 0) {
+      const newInputs = sectionTexts.map(text => {
+        const parts = text.split('|');
+        return {
+          primary: parts[0] || '',
+          secondary: parts[1] || ''
+        };
+      });
+      setSectionInputs(newInputs);
+    }
+  }, []);
   
   const handleShapeToggle = (shape: string, isChecked: boolean) => {
     let newShapes = [...selectedShapes];
@@ -95,30 +112,48 @@ const LayoutSelector = ({
     onShapesChange(newShapes);
   };
 
-  const updateSectionText = (index: number, text: string) => {
-    const newTexts = [...(sectionTexts || [])]; // Ensure sectionTexts is an array
-    newTexts[index] = text;
+  const updateSectionText = (index: number, field: 'primary' | 'secondary', value: string) => {
+    const newInputs = [...sectionInputs];
+    
+    // Create the object if it doesn't exist
+    if (!newInputs[index]) {
+      newInputs[index] = { primary: '', secondary: '' };
+    }
+    
+    // Update the specific field
+    newInputs[index][field] = value;
+    setSectionInputs(newInputs);
+    
+    // Update the combined text format (primary|secondary)
+    const newTexts = newInputs.map(input => `${input.primary}|${input.secondary}`);
     onSectionTextsChange(newTexts);
   };
 
   // Ensure we have enough text entries for all sections
   useEffect(() => {
-    if (!sectionTexts || sectionTexts.length !== currentLayout.sections) {
-      const newTexts = [...(sectionTexts || [])]; // Ensure sectionTexts is an array
+    if (currentLayout.sections > 0) {
+      const newInputs = [...sectionInputs];
       
       // Add entries if needed
-      while (newTexts.length < currentLayout.sections) {
-        newTexts.push(`Section ${newTexts.length + 1}`);
+      while (newInputs.length < currentLayout.sections) {
+        newInputs.push({
+          primary: `Section ${newInputs.length + 1}`,
+          secondary: ''
+        });
       }
       
       // Remove extras if needed
-      while (newTexts.length > currentLayout.sections) {
-        newTexts.pop();
+      while (newInputs.length > currentLayout.sections) {
+        newInputs.pop();
       }
       
+      setSectionInputs(newInputs);
+      
+      // Update the combined text format
+      const newTexts = newInputs.map(input => `${input.primary}|${input.secondary}`);
       onSectionTextsChange(newTexts);
     }
-  }, [currentLayout.sections, sectionTexts, onSectionTextsChange]);
+  }, [currentLayout.sections]);
   
   return (
     <div className="space-y-6">
@@ -162,43 +197,63 @@ const LayoutSelector = ({
       </div>
 
       <div className="space-y-3 border-t pt-3">
-        <h3 className="text-lg font-medium">Main Display Text</h3>
+        <h3 className="text-lg font-medium">Title Text</h3>
         <div className="space-y-2">
           <div className="space-y-1">
-            <Label htmlFor="primary-text">Primary Text</Label>
+            <Label htmlFor="primary-text">Main Title</Label>
             <Input
               id="primary-text"
               value={primaryText}
               onChange={(e) => onPrimaryTextChange && onPrimaryTextChange(e.target.value)}
-              placeholder="Enter primary text"
+              placeholder="Enter main title"
               className="text-sm"
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="secondary-text">Secondary Text</Label>
+            <Label htmlFor="secondary-text">Subtitle</Label>
             <Input
               id="secondary-text"
               value={secondaryText}
               onChange={(e) => onSecondaryTextChange && onSecondaryTextChange(e.target.value)}
-              placeholder="Enter secondary text"
+              placeholder="Enter subtitle"
               className="text-sm"
             />
           </div>
         </div>
       </div>
 
+      <Separator />
+
       <div className="space-y-3">
         <h3 className="text-lg font-medium">Section Text</h3>
-        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-          {(sectionTexts || []).map((text, index) => (
-            <div key={`section-${index}`} className="flex items-center space-x-2">
-              <span className="text-sm font-medium min-w-8">{index + 1}:</span>
-              <Input
-                value={text}
-                onChange={(e) => updateSectionText(index, e.target.value)}
-                placeholder={`Section ${index + 1}`}
-                className="text-sm"
-              />
+        <div className="space-y-4 max-h-48 overflow-y-auto pr-1">
+          {sectionInputs.map((input, index) => (
+            <div key={`section-${index}`} className="space-y-2 pb-2 border-b border-border">
+              <p className="text-sm font-medium">Section {index + 1}</p>
+              
+              <div className="space-y-2">
+                <div className="space-y-1">
+                  <Label htmlFor={`section-primary-${index}`} className="text-xs">Primary Text</Label>
+                  <Input
+                    id={`section-primary-${index}`}
+                    value={input.primary}
+                    onChange={(e) => updateSectionText(index, 'primary', e.target.value)}
+                    placeholder={`Section ${index + 1}`}
+                    className="text-sm"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor={`section-secondary-${index}`} className="text-xs">Secondary Text</Label>
+                  <Input
+                    id={`section-secondary-${index}`}
+                    value={input.secondary}
+                    onChange={(e) => updateSectionText(index, 'secondary', e.target.value)}
+                    placeholder="Optional section description"
+                    className="text-sm"
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>

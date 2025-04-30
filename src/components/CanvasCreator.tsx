@@ -31,6 +31,7 @@ const CanvasCreator = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>();
   const timeRef = useRef<number>(0);
+  const elementsRef = useRef<any[]>([]);
   
   // Set up canvas elements and animation
   useEffect(() => {
@@ -169,57 +170,83 @@ const CanvasCreator = ({
         
         // Draw section text if available
         if (sectionTexts && sectionTexts[section.index]) {
+          const texts = sectionTexts[section.index].split('|');
+          const primaryText = texts[0] || '';
+          const secondaryText = texts[1] || '';
+          
           ctx.save();
-          ctx.font = `bold ${Math.max(section.width / 10, 12)}px sans-serif`;
-          ctx.textAlign = "center";
-          ctx.fillStyle = themeColors.text;
-          ctx.fillText(
-            sectionTexts[section.index],
-            section.x + section.width / 2,
-            section.y + section.height / 2
-          );
+          
+          // Draw primary text
+          if (primaryText) {
+            ctx.font = `bold ${Math.max(section.width / 12, 12)}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillStyle = themeColors.text;
+            ctx.fillText(
+              primaryText,
+              section.x + section.width / 2,
+              section.y + section.height / 2 - 10
+            );
+          }
+          
+          // Draw secondary text
+          if (secondaryText) {
+            ctx.font = `${Math.max(section.width / 18, 10)}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillStyle = themeColors.subtext;
+            ctx.fillText(
+              secondaryText,
+              section.x + section.width / 2,
+              section.y + section.height / 2 + 15
+            );
+          }
+          
           ctx.restore();
         }
       });
     };
     
-    // Create abstract shapes
-    const elements: any[] = [];
-    
+    // Create or use existing elements
     const createElements = () => {
-      elements.length = 0;
-      const numElements = layout.sections * 2;
-      
-      for (let i = 0; i < numElements; i++) {
-        const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+      // Only create new elements if they don't exist or if shapes selection changed
+      if (elementsRef.current.length === 0) {
+        const numElements = layout.sections * 2;
         
-        // Base properties for all elements
-        const element = {
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.max(10 + Math.random() * 50, 15), // Ensure minimum size of 15
-          type: shapeType,
-          color: themeColors.shapes[Math.floor(Math.random() * themeColors.shapes.length)],
-          speed: isAnimated ? (0.2 + Math.random() * 0.5) * animationSpeed : 0,
-          angle: Math.random() * Math.PI * 2,
-          opacity: 0.1 + Math.random() * 0.3,
-          amplitude: 5 + Math.random() * 15,
-          frequency: 0.5 + Math.random() * 2,
-          points: Math.floor(5 + Math.random() * 8),
-          rotation: 0,
-          rotationSpeed: Math.random() * 0.01 * animationSpeed,
-          // Add special properties for lines and curves
-          length: canvas.width * (0.3 + Math.random() * 0.5), // For lines
-          controlPointOffset: Math.random() * 100 + 50 // For curves
-        };
-        
-        elements.push(element);
+        for (let i = 0; i < numElements; i++) {
+          const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+          
+          // Base properties for all elements
+          const element = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.max(10 + Math.random() * 50, 15), // Ensure minimum size of 15
+            type: shapeType,
+            color: themeColors.shapes[Math.floor(Math.random() * themeColors.shapes.length)],
+            speed: isAnimated ? (0.2 + Math.random() * 0.5) * animationSpeed : 0,
+            angle: Math.random() * Math.PI * 2,
+            opacity: 0.1 + Math.random() * 0.3,
+            amplitude: 5 + Math.random() * 15,
+            frequency: 0.5 + Math.random() * 2,
+            points: Math.floor(5 + Math.random() * 8),
+            rotation: 0,
+            rotationSpeed: Math.random() * 0.01 * animationSpeed,
+            // Add special properties for lines and curves
+            length: canvas.width * (0.6 + Math.random() * 0.3), // For lines - spanning more of canvas
+            controlPointOffset: Math.random() * 100 + 50 // For curves
+          };
+          
+          elementsRef.current.push(element);
+        }
+      } else {
+        // Update colors when theme or palette changes
+        elementsRef.current.forEach(element => {
+          element.color = themeColors.shapes[Math.floor(Math.random() * themeColors.shapes.length)];
+        });
       }
     };
     
     // Draw abstract shapes
     const drawElements = (time = 0) => {
-      elements.forEach((element) => {
+      elementsRef.current.forEach((element) => {
         ctx.save();
         ctx.globalAlpha = element.opacity;
         ctx.fillStyle = element.color;
@@ -269,7 +296,7 @@ const CanvasCreator = ({
             ctx.beginPath();
             ctx.moveTo(-element.length / 2, 0);
             ctx.lineTo(element.length / 2, 0);
-            ctx.lineWidth = 1 + element.size / 10;
+            ctx.lineWidth = Math.max(1, element.size / 10);
             ctx.stroke();
             break;
             
@@ -332,19 +359,16 @@ const CanvasCreator = ({
     
     // Draw text
     const drawText = () => {
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      
-      // Draw primary text
-      ctx.font = `bold ${canvas.width / 10}px sans-serif`;
+      // Draw main title text at the top of the canvas
+      ctx.font = `bold ${canvas.width / 15}px sans-serif`;
       ctx.textAlign = "center";
       ctx.fillStyle = themeColors.text;
-      ctx.fillText(primaryText, centerX, centerY);
+      ctx.fillText(primaryText, canvas.width / 2, canvas.height / 8);
       
-      // Draw secondary text
+      // Draw subtitle text below the main title
       ctx.font = `${canvas.width / 30}px sans-serif`;
       ctx.fillStyle = themeColors.subtext;
-      ctx.fillText(secondaryText, centerX, centerY + canvas.height / 10);
+      ctx.fillText(secondaryText, canvas.width / 2, canvas.height / 8 + 35);
     };
     
     // Animation function with time-based animation
@@ -387,6 +411,11 @@ const CanvasCreator = ({
       }
     };
   }, [theme, paletteIndex, layout, primaryText, secondaryText, sectionTexts, isAnimated, animationSpeed, shapes]);
+
+  // Reset elements when shapes change
+  useEffect(() => {
+    elementsRef.current = [];
+  }, [shapes]);
 
   return (
     <canvas

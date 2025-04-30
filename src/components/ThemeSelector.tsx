@@ -72,7 +72,7 @@ const ThemeSelector = ({
                 {theme.description}
               </span>
             </div>
-            <div className="ml-auto h-8 w-8 rounded-md overflow-hidden">
+            <div className="ml-auto h-8 w-8 rounded-md overflow-hidden relative">
               <div 
                 className={`h-full w-full ${
                   theme.id === "dark" 
