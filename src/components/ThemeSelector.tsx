@@ -2,6 +2,8 @@
 import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { RotateCw } from "lucide-react";
 
 const themes = [
   {
@@ -24,12 +26,30 @@ const themes = [
 interface ThemeSelectorProps {
   selectedTheme: string;
   onSelectTheme: (theme: string) => void;
+  paletteIndex: number;
+  onCyclePalette: () => void;
 }
 
-const ThemeSelector = ({ selectedTheme, onSelectTheme }: ThemeSelectorProps) => {
+const ThemeSelector = ({ 
+  selectedTheme, 
+  onSelectTheme,
+  paletteIndex,
+  onCyclePalette
+}: ThemeSelectorProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Choose a Theme</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Choose a Theme</h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-1" 
+          onClick={onCyclePalette}
+        >
+          <RotateCw className="h-3 w-3" />
+          <span className="text-xs">Cycle Palette</span>
+        </Button>
+      </div>
       <RadioGroup
         value={selectedTheme}
         onValueChange={onSelectTheme}
@@ -62,6 +82,9 @@ const ThemeSelector = ({ selectedTheme, onSelectTheme }: ThemeSelectorProps) => 
                       : "bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500"
                 }`} 
               />
+              <span className="absolute bottom-0 right-0 bg-background/80 text-xs px-1 rounded">
+                {paletteIndex + 1}/3
+              </span>
             </div>
           </div>
         ))}

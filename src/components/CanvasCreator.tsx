@@ -4,27 +4,34 @@ import { getDarkTheme, getLightTheme, getMulticolorTheme } from "@/utils/themes"
 
 interface CanvasCreatorProps {
   theme: string;
+  paletteIndex: number;
   layout: {
     type: string;
     sections: number;
   };
   primaryText: string;
   secondaryText: string;
+  sectionTexts: string[];
   isAnimated: boolean;
+  animationSpeed: number;
   shapes: string[];
 }
 
 const CanvasCreator = ({
   theme,
+  paletteIndex,
   layout,
   primaryText,
   secondaryText,
+  sectionTexts,
   isAnimated,
+  animationSpeed,
   shapes,
 }: CanvasCreatorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>();
-
+  const timeRef = useRef<number>(0);
+  
   // Set up canvas elements and animation
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -50,13 +57,13 @@ const CanvasCreator = ({
     const getThemeColors = () => {
       switch (theme) {
         case "dark":
-          return getDarkTheme();
+          return getDarkTheme(paletteIndex);
         case "light":
-          return getLightTheme();
+          return getLightTheme(paletteIndex);
         case "multicolor":
-          return getMulticolorTheme();
+          return getMulticolorTheme(paletteIndex);
         default:
-          return getDarkTheme();
+          return getDarkTheme(paletteIndex);
       }
     };
 
@@ -72,9 +79,10 @@ const CanvasCreator = ({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
     
-    // Draw sections based on layout
-    const drawSections = () => {
+    // Calculate section dimensions based on layout type
+    const getSectionDimensions = () => {
       const { type, sections } = layout;
+      const sectionDims = [];
       
       if (type === "grid") {
         const gridSize = Math.ceil(Math.sqrt(sections));
@@ -84,12 +92,13 @@ const CanvasCreator = ({
         for (let i = 0; i < gridSize; i++) {
           for (let j = 0; j < gridSize; j++) {
             if (i * gridSize + j < sections) {
-              const x = j * cellWidth;
-              const y = i * cellHeight;
-              
-              ctx.strokeStyle = themeColors.accent;
-              ctx.lineWidth = 1;
-              ctx.strokeRect(x, y, cellWidth, cellHeight);
+              sectionDims.push({
+                x: j * cellWidth,
+                y: i * cellHeight,
+                width: cellWidth,
+                height: cellHeight,
+                index: i * gridSize + j
+              });
             }
           }
         }
@@ -97,16 +106,81 @@ const CanvasCreator = ({
         const sectionHeight = canvas.height / sections;
         
         for (let i = 0; i < sections; i++) {
-          const y = i * sectionHeight;
-          
-          ctx.strokeStyle = themeColors.accent;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(canvas.width, y);
-          ctx.stroke();
+          sectionDims.push({
+            x: 0,
+            y: i * sectionHeight,
+            width: canvas.width,
+            height: sectionHeight,
+            index: i
+          });
+        }
+      } else if (type === "columns-2") {
+        const columnWidth = canvas.width / 2;
+        const rowsPerColumn = Math.ceil(sections / 2);
+        const rowHeight = canvas.height / rowsPerColumn;
+        
+        for (let i = 0; i < 2; i++) {
+          for (let j = 0; j < rowsPerColumn; j++) {
+            const index = i * rowsPerColumn + j;
+            if (index < sections) {
+              sectionDims.push({
+                x: i * columnWidth,
+                y: j * rowHeight,
+                width: columnWidth,
+                height: rowHeight,
+                index
+              });
+            }
+          }
+        }
+      } else if (type === "columns-3") {
+        const columnWidth = canvas.width / 3;
+        const rowsPerColumn = Math.ceil(sections / 3);
+        const rowHeight = canvas.height / rowsPerColumn;
+        
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < rowsPerColumn; j++) {
+            const index = i * rowsPerColumn + j;
+            if (index < sections) {
+              sectionDims.push({
+                x: i * columnWidth,
+                y: j * rowHeight,
+                width: columnWidth,
+                height: rowHeight,
+                index
+              });
+            }
+          }
         }
       }
+      
+      return sectionDims;
+    };
+    
+    // Draw sections based on layout
+    const drawSections = () => {
+      const sectionDims = getSectionDimensions();
+      
+      sectionDims.forEach(section => {
+        // Draw section borders
+        ctx.strokeStyle = themeColors.accent;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(section.x, section.y, section.width, section.height);
+        
+        // Draw section text if available
+        if (sectionTexts[section.index]) {
+          ctx.save();
+          ctx.font = `bold ${section.width / 10}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.fillStyle = themeColors.text;
+          ctx.fillText(
+            sectionTexts[section.index],
+            section.x + section.width / 2,
+            section.y + section.height / 2
+          );
+          ctx.restore();
+        }
+      });
     };
     
     // Create abstract shapes
@@ -125,9 +199,14 @@ const CanvasCreator = ({
           size: 10 + Math.random() * 50,
           type: shapeType,
           color: themeColors.shapes[Math.floor(Math.random() * themeColors.shapes.length)],
-          speed: isAnimated ? 0.2 + Math.random() * 0.5 : 0,
+          speed: isAnimated ? (0.2 + Math.random() * 0.5) * animationSpeed : 0,
           angle: Math.random() * Math.PI * 2,
           opacity: 0.1 + Math.random() * 0.3,
+          amplitude: 5 + Math.random() * 15,
+          frequency: 0.5 + Math.random() * 2,
+          points: Math.floor(5 + Math.random() * 8),
+          rotation: 0,
+          rotationSpeed: Math.random() * 0.01 * animationSpeed
         };
         
         elements.push(element);
@@ -144,6 +223,7 @@ const CanvasCreator = ({
         if (isAnimated) {
           element.x += Math.cos(element.angle) * element.speed;
           element.y += Math.sin(element.angle) * element.speed;
+          element.rotation += element.rotationSpeed;
           
           // Bounce off walls
           if (element.x < 0 || element.x > canvas.width) {
@@ -153,29 +233,78 @@ const CanvasCreator = ({
             element.angle = -element.angle;
           }
           
-          // Pulsing size
-          element.size += Math.sin(time / 1000) * 0.5;
+          // Pulsing size with smoother animation
+          element.size += Math.sin(time / 1000) * 0.5 * animationSpeed;
         }
+        
+        ctx.translate(element.x, element.y);
+        ctx.rotate(element.rotation);
         
         switch (element.type) {
           case "circle":
             ctx.beginPath();
-            ctx.arc(element.x, element.y, element.size, 0, Math.PI * 2);
+            ctx.arc(0, 0, element.size, 0, Math.PI * 2);
             ctx.fill();
             break;
+            
           case "square":
             ctx.fillRect(
-              element.x - element.size / 2,
-              element.y - element.size / 2,
+              -element.size / 2,
+              -element.size / 2,
               element.size,
               element.size
             );
             break;
+            
+          case "line":
+            ctx.beginPath();
+            ctx.moveTo(-element.size, 0);
+            ctx.lineTo(element.size, 0);
+            ctx.lineWidth = 1 + element.size / 10;
+            ctx.strokeStyle = element.color;
+            ctx.stroke();
+            break;
+            
+          case "curve":
+            ctx.beginPath();
+            ctx.moveTo(-element.size, 0);
+            ctx.quadraticCurveTo(
+              0, 
+              -element.size * 1.5, 
+              element.size, 
+              0
+            );
+            ctx.strokeStyle = element.color;
+            ctx.lineWidth = 1 + element.size / 10;
+            ctx.stroke();
+            break;
+            
           case "wave":
             ctx.beginPath();
             for (let i = 0; i < Math.PI * 2; i += 0.1) {
-              const x = element.x + Math.cos(i) * element.size;
-              const y = element.y + Math.sin(i) * element.size + Math.sin(i * 8 + time / 500) * 5;
+              const x = Math.cos(i) * element.size;
+              const y = Math.sin(i) * element.size + 
+                        Math.sin(i * 8 + time / 500) * 
+                        element.amplitude * (isAnimated ? 1 : 0.5);
+              
+              if (i === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+            }
+            ctx.closePath();
+            ctx.fill();
+            break;
+            
+          case "blob":
+            ctx.beginPath();
+            for (let i = 0; i < Math.PI * 2; i += (Math.PI * 2) / element.points) {
+              const radius = element.size * 
+                            (0.8 + Math.sin(i * element.frequency + 
+                                           (isAnimated ? time / 1000 : 0)) * 0.2);
+              const x = Math.cos(i) * radius;
+              const y = Math.sin(i) * radius;
               
               if (i === 0) {
                 ctx.moveTo(x, y);
@@ -209,12 +338,21 @@ const CanvasCreator = ({
       ctx.fillText(secondaryText, centerX, centerY + canvas.height / 10);
     };
     
-    // Animation function
-    const animate = (time: number) => {
+    // Animation function with time-based animation
+    const animate = (timestamp: number) => {
+      // Initialize timeRef on first frame
+      if (!timeRef.current) {
+        timeRef.current = timestamp;
+      }
+      
+      // Calculate elapsed time
+      const elapsed = timestamp - timeRef.current;
+      timeRef.current = timestamp;
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       drawBackground();
-      drawElements(time);
+      drawElements(timestamp);
       drawSections();
       drawText();
       
@@ -239,7 +377,7 @@ const CanvasCreator = ({
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [theme, layout, primaryText, secondaryText, isAnimated, shapes]);
+  }, [theme, paletteIndex, layout, primaryText, secondaryText, sectionTexts, isAnimated, animationSpeed, shapes]);
 
   return (
     <canvas

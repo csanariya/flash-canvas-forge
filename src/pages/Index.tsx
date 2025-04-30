@@ -12,11 +12,36 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [theme, setTheme] = useState("dark");
+  const [paletteIndex, setPaletteIndex] = useState(0);
   const [layout, setLayout] = useState({ type: "grid", sections: 4 });
   const [primaryText, setPrimaryText] = useState("85%");
   const [secondaryText, setSecondaryText] = useState("Engagement increase");
+  const [sectionTexts, setSectionTexts] = useState(Array(4).fill("").map((_, i) => `Section ${i+1}`));
   const [isAnimated, setIsAnimated] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(2); // 1=slow, 2=medium, 3=fast
   const [shapes, setShapes] = useState(["circle", "square", "wave"]);
+  
+  const handleCyclePalette = () => {
+    setPaletteIndex((prevIndex) => (prevIndex + 1) % 3);
+  };
+
+  const handleLayoutChange = (newLayout: { type: string; sections: number }) => {
+    // Ensure sectionTexts array is properly sized when layout changes
+    const newSectionTexts = [...sectionTexts];
+    
+    // Add entries if needed
+    while (newSectionTexts.length < newLayout.sections) {
+      newSectionTexts.push(`Section ${newSectionTexts.length + 1}`);
+    }
+    
+    // Remove extras if needed
+    while (newSectionTexts.length > newLayout.sections) {
+      newSectionTexts.pop();
+    }
+    
+    setSectionTexts(newSectionTexts);
+    setLayout(newLayout);
+  };
   
   return (
     <div className="min-h-screen bg-background">
@@ -44,14 +69,18 @@ const Index = () => {
                   <ThemeSelector 
                     selectedTheme={theme} 
                     onSelectTheme={setTheme}
+                    paletteIndex={paletteIndex}
+                    onCyclePalette={handleCyclePalette}
                   />
                 </TabsContent>
                 
                 <TabsContent value="layout" className="space-y-4 pt-4">
                   <LayoutSelector
                     currentLayout={layout}
-                    onLayoutChange={setLayout}
+                    onLayoutChange={handleLayoutChange}
                     onShapesChange={setShapes}
+                    sectionTexts={sectionTexts}
+                    onSectionTextsChange={setSectionTexts}
                   />
                 </TabsContent>
                 
@@ -72,6 +101,8 @@ const Index = () => {
               <AnimationToggle 
                 isAnimated={isAnimated} 
                 onToggle={setIsAnimated} 
+                animationSpeed={animationSpeed}
+                onSpeedChange={setAnimationSpeed}
               />
               <ExportOptions isAnimated={isAnimated} />
             </div>
@@ -82,10 +113,13 @@ const Index = () => {
               <div className="relative aspect-video w-full overflow-hidden rounded-md">
                 <CanvasCreator
                   theme={theme}
+                  paletteIndex={paletteIndex}
                   layout={layout}
                   primaryText={primaryText}
                   secondaryText={secondaryText}
+                  sectionTexts={sectionTexts}
                   isAnimated={isAnimated}
+                  animationSpeed={animationSpeed}
                   shapes={shapes}
                 />
               </div>
